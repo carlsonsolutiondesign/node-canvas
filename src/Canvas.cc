@@ -14,6 +14,8 @@
 #include <node_version.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+#include <cairo-vg.h>
+#include "cairo-boilerplate.h"
 #include "closure.h"
 
 #ifdef HAVE_JPEG
@@ -69,9 +71,11 @@ NAN_METHOD(Canvas::New) {
   if (info[1]->IsNumber()) height = info[1]->Uint32Value();
   if (info[2]->IsString()) type = !strcmp("pdf", *String::Utf8Value(info[2]))
     ? CANVAS_TYPE_PDF
-    : !strcmp("svg", *String::Utf8Value(info[2]))
-      ? CANVAS_TYPE_SVG
-      : CANVAS_TYPE_IMAGE;
+    : !strcmp("vg", *String::Utf8Value(info[2]))
+      ? CANVAS_TYPE_VG
+      : !strcmp("svg", *String::Utf8Value(info[2]))
+        ? CANVAS_TYPE_SVG
+        : CANVAS_TYPE_IMAGE;
   Canvas *canvas = new Canvas(width, height, type);
   canvas->Wrap(info.This());
   info.GetReturnValue().Set(info.This());
@@ -83,7 +87,7 @@ NAN_METHOD(Canvas::New) {
 
 NAN_GETTER(Canvas::GetType) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
-  info.GetReturnValue().Set(Nan::New<String>(canvas->isPDF() ? "pdf" : canvas->isSVG() ? "svg" : "image").ToLocalChecked());
+  info.GetReturnValue().Set(Nan::New<String>(canvas->isPDF() ? "pdf" : canvas->isVG() ? "vg" : canvas->isSVG() ? "svg" : "image").ToLocalChecked());
 }
 
 /*
@@ -234,7 +238,7 @@ NAN_METHOD(Canvas::ToBuffer) {
   Canvas *canvas = Nan::ObjectWrap::Unwrap<Canvas>(info.This());
 
   // TODO: async / move this out
-  if (canvas->isPDF() || canvas->isSVG()) {
+  if (canvas->isPDF() || canvas->isSVG() || canvas->isVG()) {
     cairo_surface_finish(canvas->surface());
     closure_t *closure = (closure_t *) canvas->closure();
 
@@ -485,6 +489,10 @@ Canvas::Canvas(int w, int h, canvas_type_t t): Nan::ObjectWrap() {
     cairo_status_t status = closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
     assert(status == CAIRO_STATUS_SUCCESS);
     _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, w, h);
+  } else if (CANVAS_TYPE_VG == t) {
+    _closure = NULL; // empty at first
+    const cairo_boilerplate_target_t *target = cairo_boilerplate_get_target_by_name("vg", CAIRO_CONTENT_COLOR_ALPHA);
+    _surface = target->create_surface("vg", CAIRO_CONTENT_COLOR_ALPHA, width, height, width, height, CAIRO_BOILERPLATE_MODE_TEST, &_closure);
   } else {
     _surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
     assert(_surface);
@@ -500,6 +508,7 @@ Canvas::~Canvas() {
   switch (type) {
     case CANVAS_TYPE_PDF:
     case CANVAS_TYPE_SVG:
+    case CANVAS_TYPE_VG:
       cairo_surface_finish(_surface);
       closure_destroy((closure_t *) _closure);
       free(_closure);
@@ -530,7 +539,24 @@ Canvas::resurface(Local<Object> canvas) {
       closure_destroy((closure_t *) _closure);
       cairo_surface_destroy(_surface);
       closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
-      _surface = cairo_svg_surface_create_for_stream(toBuffer, _closure, width, height);
+
+      // Reset context
+      context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
+      if (!context->IsUndefined()) {
+        Context2d *context2d = Nan::ObjectWrap::Unwrap<Context2d>(context->ToObject());
+        cairo_t *prev = context2d->context();
+        context2d->setContext(cairo_create(surface()));
+        cairo_destroy(prev);
+      }
+      break;
+    case CANVAS_TYPE_VG:
+      // Re-surface
+      cairo_surface_finish(_surface);
+      closure_destroy((closure_t *) _closure);
+      cairo_surface_destroy(_surface);
+      closure_init((closure_t *) _closure, this, 0, PNG_NO_FILTERS);
+      
+      _surface = cairo_boilerplate_get_target_by_name("vg", CAIRO_CONTENT_COLOR_ALPHA)->create_surface("vg", CAIRO_CONTENT_COLOR_ALPHA, width, height, width, height, CAIRO_BOILERPLATE_MODE_TEST, &_closure);
 
       // Reset context
       context = canvas->Get(Nan::New<String>("context").ToLocalChecked());
