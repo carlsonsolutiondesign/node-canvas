@@ -25,16 +25,16 @@
 
 #define _GNU_SOURCE 1 /* for vasprintf */
 
-#include "cairo-boilerplate.h"
-#include "cairo-boilerplate-system.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#ifdef HAVE_UNISTD_H
+#if HAVE_UNISTD_H || defined(__APPLE__)
 #include <unistd.h>
 #endif
 #include <errno.h>
+
+#include "cairo-boilerplate.h"
+#include "cairo-boilerplate-system.h"
 
 void *
 xmalloc (size_t size)
@@ -117,7 +117,7 @@ xasprintf (char       **strp,
     }
 
     len = (ret + sizeof (int)) & -sizeof (int);
-    *strp = malloc (len);
+    *strp = (char *)malloc (len);
     if (*strp == NULL) {
 	fprintf (stderr, "Out of memory\n");
 	exit (1);

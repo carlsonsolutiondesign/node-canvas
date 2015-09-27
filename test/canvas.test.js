@@ -213,8 +213,8 @@ module.exports = {
     assert('image' == canvas.type);
     var canvas = new Canvas(10, 10, 'pdf');
     assert('pdf' == canvas.type);
-    var canvas = new Canvas(10, 10, 'svg');
-    assert('svg' == canvas.type);
+    var canvas = new Canvas(10, 10, 'vg');
+    assert('vg' == canvas.type);
     var canvas = new Canvas(10, 10, 'hey');
     assert('image' == canvas.type);
   },

@@ -49,7 +49,11 @@
         'src/color.cc',
         'src/Image.cc',
         'src/ImageData.cc',
-        'src/init.cc'
+        'src/init.cc',
+	'src/cairo-boilerplate-system.c',
+	'src/cairo-boilerplate-vg.c',
+	'src/cairo-boilerplate-constructors.c',
+	'src/cairo-boilerplate.c'
       ],
       'conditions': [
         ['OS=="win"', {

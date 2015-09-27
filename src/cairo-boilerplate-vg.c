@@ -30,9 +30,10 @@
  * The Initial Developer of the Original Code is Chris Wilson.
  */
 
-#include "cairo-boilerplate-private.h"
+#include "cairo-boilerplate.h"
 
 #include <cairo-vg.h>
+#include <cairo.h>
 
  /* XXX Not sure how to handle library specific context initialization */
 //#define USE_SHIVA

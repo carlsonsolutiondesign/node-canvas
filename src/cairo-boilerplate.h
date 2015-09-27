@@ -36,9 +36,12 @@
 #include <cairo.h>
 #include <string.h>
 
+/*
 #include "cairo-compiler-private.h"
+*/
 
-#if   HAVE_STDINT_H
+
+#if   HAVE_STDINT_H || defined(__APPLE__)
 # include <stdint.h>
 #elif HAVE_INTTYPES_H
 # include <inttypes.h>
@@ -190,6 +193,16 @@ typedef struct _cairo_boilerplate_target {
     cairo_bool_t				 is_vector;
     cairo_bool_t				 is_recording;
 } cairo_boilerplate_target_t;
+
+void
+_cairo_boilerplate_register_backend (const cairo_boilerplate_target_t *targets,
+				     unsigned int		       count);
+#define CAIRO_BOILERPLATE(name__, targets__) \
+void _register_##name__ (void); \
+void _register_##name__ (void) { \
+    _cairo_boilerplate_register_backend (targets__, \
+					 ARRAY_LENGTH(targets__)); \
+}
 
 const cairo_boilerplate_target_t *
 cairo_boilerplate_get_image_target (cairo_content_t content);
