@@ -52,6 +52,7 @@
         'src/init.cc',
 	'src/cairo-boilerplate-system.c',
 	'src/cairo-boilerplate-vg.c',
+	'src/cairo-boilerplate-glx.c',
 	'src/cairo-boilerplate-constructors.c',
 	'src/cairo-boilerplate.c'
       ],
@@ -96,6 +97,7 @@
             '<!@(pkg-config libpng --libs)'
           ],
           'include_dirs': [
+            ' -DCAIRO_HAS_GLX_FUNCTIONS '
             '<!@(pkg-config cairo --cflags-only-I | sed s/-I//g)',
             '<!@(pkg-config libpng --cflags-only-I | sed s/-I//g)'
           ]
@@ -149,7 +151,10 @@
               ]
             }, {
               'libraries': [
-                '-ljpeg'
+                '-ljpeg',
+		'-framework GLUT',
+		'-framework OpenGL'
+		' -lxcb-glx'
               ]
             }]
           ]

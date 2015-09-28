@@ -511,6 +511,7 @@ void
 _cairo_boilerplate_register_backend (const cairo_boilerplate_target_t *targets,
 				     unsigned int		       count)
 {
+	fprintf(stderr, "Registering backend name %s\n", targets->name);
     targets += count;
     while (count--) {
 	struct cairo_boilerplate_target_list *list;
@@ -815,6 +816,7 @@ cairo_boilerplate_get_target_by_name (const char      *name,
     /* first return an exact match */
     for (list = cairo_boilerplate_targets; list != NULL; list = list->next) {
 	const cairo_boilerplate_target_t *target = list->target;
+	fprintf(stderr, "name %s=%s content %d=%d\n", target->name, name, target->content, content);
 	if (strcmp (target->name, name) == 0 &&
 	    target->content == content)
 	{

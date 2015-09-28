@@ -200,6 +200,7 @@ _cairo_boilerplate_register_backend (const cairo_boilerplate_target_t *targets,
 #define CAIRO_BOILERPLATE(name__, targets__) \
 void _register_##name__ (void); \
 void _register_##name__ (void) { \
+	fprintf(stderr, "Macro length %d\n", ARRAY_LENGTH(targets__)); \
     _cairo_boilerplate_register_backend (targets__, \
 					 ARRAY_LENGTH(targets__)); \
 }
@@ -262,4 +263,5 @@ cairo_boilerplate_fini (void);
 
 CAIRO_END_DECLS
 
+void _cairo_boilerplate_register_all (void);
 #endif

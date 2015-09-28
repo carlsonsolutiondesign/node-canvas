@@ -32,8 +32,8 @@
 
 #include "cairo-boilerplate.h"
 
-#include <cairo-vg.h>
 #include <cairo.h>
+#include <cairo-vg.h>
 
  /* XXX Not sure how to handle library specific context initialization */
 //#define USE_SHIVA
@@ -121,6 +121,7 @@ _cairo_boilerplate_vg_create_surface_glx (const char		    *name,
 	free (vgc);
 	return NULL;
     }
+	fprintf(stderr, "content is %d\n", content);
 
     if (content == CAIRO_CONTENT_COLOR)
 	vi = glXChooseVisual (dpy, DefaultScreen (dpy), rgb_attribs);
@@ -302,7 +303,7 @@ _cairo_boilerplate_vg_synchronize (void *closure)
 static const cairo_boilerplate_target_t targets[] = {
 #if CAIRO_HAS_GLX_FUNCTIONS
     {
-	"vg-glx", "vg", NULL, NULL,
+	"glx-vg", "vg", NULL, NULL,
 	CAIRO_SURFACE_TYPE_VG, CAIRO_CONTENT_COLOR_ALPHA, 1,
 	"cairo_vg_context_create_for_glx",
 	_cairo_boilerplate_vg_create_surface_glx,
@@ -316,7 +317,7 @@ static const cairo_boilerplate_target_t targets[] = {
 	TRUE, FALSE, FALSE
     },
     {
-	"vg-glx", "vg", NULL, NULL,
+	"glx-vg", "vg", NULL, NULL,
 	CAIRO_SURFACE_TYPE_VG, CAIRO_CONTENT_COLOR, 1,
 	"cairo_vg_context_create_for_glx",
 	_cairo_boilerplate_vg_create_surface_glx,
